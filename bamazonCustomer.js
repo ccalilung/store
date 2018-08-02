@@ -70,7 +70,7 @@ function buy() {
                 console.log(results)
                 if (results[0].stock_quantity > 0) {
                     connection.query('UPDATE products SET ? WHERE ?', [{
-                        stock_quantity: results[0].stock_quantity - 1
+                        stock_quantity: results[0].stock_quantity - quantityRequested
                     }, {
                         product_name: user.action
                     }], function (error, results, fields) {
@@ -100,14 +100,18 @@ function buy() {
 
 function search() {
     connection.resume();
+    connection.query('SELECT * FROM products', function(err,res,fields) {
+        var numResults = res.length
+    
     connection.query('SELECT item_id, product_name FROM products', function (error, results, fields) {
         if (error) throw error;
-        for (i = 0; i < 12; i++) {
+        for (i = 0; i < numResults; i++) {
             console.log("Item ID: " + results[i].item_id + " Product Name: " + results[i].product_name)
            
-        }
-    })
-    x();
+        }x();
+    });
+});
+    
 
 
 }
