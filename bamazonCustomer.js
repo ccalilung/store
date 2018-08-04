@@ -57,7 +57,7 @@ function buy() {
     connection.resume();
     connection.query('SELECT item_id, product_name FROM products', function (error, results, fields) {
         if (error) throw error;
-        for (i = 0; i < 12; i++) {
+        for (i = 0; i < results.length; i++) {
             arr.push(results[i].product_name)
         }
         inquirer.prompt([{
@@ -65,20 +65,30 @@ function buy() {
             name: "action",
             message: "What would you like to buy?",
             choices: arr
-        }]).then(function (user) {
-            connection.query('SELECT stock_quantity FROM products WHERE product_name = ?', user.action, function (error, results, fields) {
-                console.log(results)
-                if (results[0].stock_quantity > 0) {
+        },
+    {
+        type: "input",
+        name: "quantityRequested",
+        message: "How many of the product would you like to purchase?"
+
+
+    }]).then(function (user) {
+            connection.query('SELECT stock_quantity, price FROM products WHERE product_name = ?', user.action, function (error, results, fields) {
+                
+                if ((results[0].stock_quantity > 0) && (results[0].stock_quantity-user.quantityRequested >= 0)) {
                     connection.query('UPDATE products SET ? WHERE ?', [{
-                        stock_quantity: results[0].stock_quantity - quantityRequested
+                        stock_quantity: results[0].stock_quantity - user.quantityRequested
                     }, {
                         product_name: user.action
                     }], function (error, results, fields) {
 
                     })
-                    connection.query('SELECT stock_quantity FROM products WHERE product_name = ?', user.action, function (error, results, fields) {
-                        console.log("quantity left: " + results[0].stock_quantity)})
-                       x();
+                    connection.query('SELECT price FROM products WHERE product_name = ?', user.action, function (error, results, fields) {
+                        console.log("Price:" + user.quantityRequested*results[0].price) 
+                        x()
+                    })
+                       
+                       
                 }
 
                 if (results[0].stock_quantity <= 0) {
@@ -86,12 +96,12 @@ function buy() {
                     x();
 
                 }
-
+                
 
 
             })
 
-        })
+        }); 
     })
   
 };
@@ -103,10 +113,10 @@ function search() {
     connection.query('SELECT * FROM products', function(err,res,fields) {
         var numResults = res.length
     
-    connection.query('SELECT item_id, product_name FROM products', function (error, results, fields) {
+    connection.query('SELECT * FROM products', function (error, results, fields) {
         if (error) throw error;
         for (i = 0; i < numResults; i++) {
-            console.log("Item ID: " + results[i].item_id + " Product Name: " + results[i].product_name)
+            console.log("Item ID: " + results[i].item_id + " Product Name: " + results[i].product_name + " Price: $" + results[i].price)
            
         }x();
     });
