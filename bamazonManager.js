@@ -90,7 +90,7 @@ function addInventory() {
                     }, {
                         product_name: stock
                     }], function (error, results, fields) {
-                        console.log("You've added " + quantity + " to " + user.stock)
+                        console.log("You now have " + quantity + " of " + user.stock)
                         x();
                     })
         })}); 
@@ -123,7 +123,7 @@ function addProduct() {
 
     ]).then(function (user) {
         
-        connection.query('INSERT INTO products (product_name,department_name,price,stock_quantity) VALUES (?,?,?,?)', [
+        connection.query('INSERT INTO products (product_name,department_name,price,stock_quantity,product_sales) VALUES (?,?,?,?,0.00)', [
 
                 user.product_name, user.department_name, user.price, user.stock_quantity
             ],
@@ -133,7 +133,7 @@ function addProduct() {
                         product_name: results[results.length-1].product_name,
                         department_name: results[results.length-1].department_name,
                         price: results[results.length-1].price,
-                        stock_quantity: results[results.length-1].stock_quantity})
+                        stock_quantity: results[results.length-1].stock_quantity, product_sales: 0.00})
                 x()
 
             })
@@ -159,9 +159,17 @@ function viewLow() {
                 })
             }
         }
-
-        console.log(arr)
-        x()
+        if(arr[0] !== undefined) {
+            console.log(arr)
+            x()
+        }
+        if(arr[0] === undefined) {
+            console.log("Product stock levels are optimal; no need for replenishments at this time.")
+            x();
+        }
+        
+        
+       
     })
 }
 
@@ -169,18 +177,16 @@ function viewLow() {
 
 function search() {
     connection.resume();
-    connection.query('SELECT * FROM products', function (err, res, fields) {
-        var numResults = res.length
-
-        connection.query('SELECT item_id, product_name FROM products', function (error, results, fields) {
+    connection.query('SELECT * FROM products', function (error, results, fields) {
+        var numResults = results.length
             if (error) throw error;
             for (i = 0; i < numResults; i++) {
-                console.log("Item ID: " + results[i].item_id + " Product Name: " + results[i].product_name)
+                console.log("Item ID: " + results[i].item_id + " Product Name: " + results[i].product_name + " Stock Quantity: " + results[i].stock_quantity)
 
             }
             x();
         });
-    });
+
 
 
 
